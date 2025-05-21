@@ -1,0 +1,14 @@
+src/__pycache__/
+src/control/__pycache__
+src/CaPS/__pycache__
+__pycache__/
+_/
+
+ckpt/
+wandb/
+data/
+diffan_results/
+
+.env
+
+

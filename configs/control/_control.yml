@@ -1,0 +1,8 @@
+model_name : "meta-llama/Llama-3.1-8B-Instruct"
+dataset_name: "ecoli70" #sachs_nocycle, physics, ecoli70, magic-niab, magic-irri, arth150
+
+control: True
+scino_prob_list: ["rank_prob", "ci_overlap_prob"] 
+llm_prob_list: ["normalized_prob", "normalized_prob2"]
+num_variances: 30
+prompt_version: "v2"

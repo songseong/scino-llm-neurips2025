@@ -1,0 +1,44 @@
+setup:
+    experiment_name : _fno_new_n3
+    use_wandb : True
+    save_folder : 'ckpt'
+    output_path : "results_n3.txt"
+
+datasets:
+    n_nodes : [3] 
+    num_graphs_list : [10] 
+    graph_idx : [0,9]
+    num_samples : 1000
+    data_ver : 1
+
+model:
+    beta_0 : 0.01
+    beta_1 : 20
+    T : 1
+    hidden_channel : 1
+    n_fourier_layers : 1
+    norm_type : "layer"
+    bias : True
+
+training:
+    model_save : True
+    epochs : 1000
+    batch_size : 128
+    learning_rate : 0.001
+    early_stopping_wait : 100
+    T : 1
+    scheduler: "onecycle"
+    mmd_model : False
+
+evaluation:
+    load_order : True
+    ordering_option : "order_b_1000"
+    ordering_batch_size : 1000
+    eval_batch_size : 150
+    n_votes : 3
+    t_max : 0.1
+    masking : True
+    residue : True
+    pruning_P : False
+    cutoff : 0.01
+    random_sampling : True

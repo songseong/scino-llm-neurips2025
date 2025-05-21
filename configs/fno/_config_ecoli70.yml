@@ -1,0 +1,45 @@
+setup:
+    experiment_name : _fno_ecoli70
+    use_wandb : True
+    save_folder : 'ckpt'
+    output_path : "results_ecoli70.txt"
+
+datasets:
+    name : ecoli70
+    n_nodes : [46] 
+    num_graphs_list : [5]
+    graph_idx : [0,4]
+    num_samples : 10000
+    data_ver : 1
+
+model:
+    beta_0 : 0.01
+    beta_1 : 1
+    T : 1
+    hidden_channel : 1
+    n_fourier_layers : 1
+    norm_type : "batch"
+    bias : False
+
+training:
+    model_save : True
+    epochs : 5000
+    batch_size : 1000
+    learning_rate : 0.0001
+    early_stopping_wait : 1000
+    T : 0.5
+    scheduler: "plateau"
+    mmd_model : False
+
+
+evaluation:
+    load_order : True
+    ordering_batch_size : 1000
+    eval_batch_size : 1000
+    n_votes : 3
+    t_max : 0.1
+    masking : True
+    residue : True
+    pruning_P : False
+    cutoff : 0.001
+    random_sampling : False

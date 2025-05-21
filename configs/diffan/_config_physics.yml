@@ -1,0 +1,34 @@
+setup:
+    experiment_name : _diffan_physics
+    use_wandb : True
+    save_folder : 'ckpt_Diff'
+    output_path : "results_physics.txt"
+
+datasets:
+    n_nodes : [7] 
+    num_graphs_list : [5]
+    graph_idx : [0,4]
+    num_samples : 5000
+    data_ver : 1
+
+training:
+    model_save : True
+    epochs : 3000
+    batch_size : 1000
+    learning_rate : 0.005
+    early_stopping_wait : 300
+    T : 0.5
+    scheduler: "plateau"
+    mmd_model : False
+
+evaluation:
+    load_order : True
+    ordering_batch_size : 1000
+    eval_batch_size : 1000
+    n_votes : 3
+    t_max : 0.5
+    masking : True
+    residue : True
+    pruning_P : False
+    cutoff : 0.001
+    random_sampling : False

@@ -1,0 +1,15 @@
+dataset_name: "sachs_nocycle"
+type: "continuous"
+n_nodes: 8
+
+model:
+    n_fourier_layers : 1
+
+evaluation:
+    ordering_batch_size : 7466
+    eval_batch_size : 1000
+    n_votes : 3
+    t_max : 0.5
+    masking : True
+    residue : True
+    random_sampling : False

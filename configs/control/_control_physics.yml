@@ -1,0 +1,16 @@
+dataset_name: "physics"
+type: "continuous"
+n_nodes: 7
+
+model:
+    n_fourier_layers : 1
+
+evaluation:
+    ordering_batch_size : 5000
+    eval_batch_size : 1000
+    n_votes : 3
+    t_max : 0.5
+    masking : True
+    residue : True
+    random_sampling : False
+
