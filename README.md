@@ -32,7 +32,7 @@ If not specified, the default identifiability criterion is the **DiffAN** method
 ### Probabilistic Control of Autoregressive Causal Ordering
 To run LLM-based control for Causal Ordering, use the following command:
 ```
-python main_control.py ...
+python main_control.py 
 ```
 Make sure to specify the target dataset by setting the dataset_name field in the configuration file:
 **configs/control/_control.yml**
