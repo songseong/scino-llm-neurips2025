@@ -11,7 +11,7 @@ from castle.metrics import MetricsDAG
 
 from cdt.metrics import SID
 
-from src.CaPS.utils import *
+from src.caps.utils import *
 from pathlib import Path
 from cdt.utils.R import launch_R_script
 import tempfile
@@ -67,7 +67,7 @@ def evaluate(args, dag, GT_DAG):
 
 def cam_pruning(A, X, cutoff):
     with tempfile.TemporaryDirectory() as save_path:
-        pruning_dir = Path(__file__).parent / "src/CaPS"
+        pruning_dir = Path(__file__).parent / "src/caps"
         pruning_path = pruning_dir / "pruning_R_files/cam_pruning.R"  
 
         prev_dir = os.getcwd()                 
