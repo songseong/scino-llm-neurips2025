@@ -65,7 +65,6 @@ def save_num_errors2(dict_errors, n_nodes, output_dir, graph_idx, ordering_optio
         json.dump(converted_dict, f, indent=4)
     print(f"Errors saved to {file_path}")
 
-
 def compute_rbf_kernel(X, n_kernels=5, mul_factor=2.0, bandwidth=None):
     """
     Computes a multi-scale RBF kernel matrix from [Gretton et al. 2012].

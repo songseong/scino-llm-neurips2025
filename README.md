@@ -1,4 +1,5 @@
 # SciNO
+This repo contains the official implementation for the paper Score-informed Neural Operator for Enhancing Ordering-based Causal Discovery
 
 ### Setup Instructions
 
@@ -37,3 +38,10 @@ python main_control.py
 Make sure to specify the target dataset by setting the dataset_name field in the configuration file:
 **configs/control/_control.yml**
 
+### Pretrained checkpoints
+
+All **checkpoints** are provided in this [Google Drive link](https://drive.google.com/file/d/1ZZ5godXYGNQGVLrFNJ5mtx0CCTlaaT2_/view?usp=drive_link).
+
+### Dataset
+
+All **datasets** are provided in this [Google Drive link](https://drive.google.com/file/d/1GgucMenfLw_jlZRg7vLsoJcSMTW8sAZ1/view?usp=drive_link).

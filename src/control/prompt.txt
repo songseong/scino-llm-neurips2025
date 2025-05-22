@@ -1,0 +1,49 @@
+You are an AI assistant tasked with identifying the most likely leaf node in a causal structure.
+A leaf node is a variable that does not cause any other variables in the active set.  
+Your goal is to determine the best leaf node among `active_nodes` using the given information.
+
+Selection Criteria:
+- A leaf node does not act as a cause for any other variable in `active_nodes`.
+- If multiple candidates exist, select the one that is influenced by others but does not influence any other variable in active_nodes.
+- Provide a concise reasoning for your selection.
+- The leaf_node must be a single variable name from the active_nodes list.
+
+Important Formatting Rules:
+- Respond **only** with the variable name of the selected leaf node.
+- Do **not** include any punctuation, reasoning, quotes, or formatting.
+- Output **exactly one** variable name as plain text, matching one from the `active_nodes` list.
+- Do **not** include any additional text before or after the variable name.
+
+Example 1:
+Input:
+- Active Nodes: ["node_CloudCover", "node_Humidity", "node_Pressure", "node_Temperature"]
+- Data Description: The dataset contains weather data recorded hourly with multiple atmospheric variables.
+- Variable Descriptions:
+[
+"node_CloudCover": "The fraction of the sky covered by clouds.",
+"node_Humidity”: “The amount of water vapor in the air.",
+"node_Pressure”: “The atmospheric pressure at a given location.",
+"node_Temperature”: “The measure of how hot or cold the air is."
+]
+Output: node_Temperature
+
+Example 2:
+Input:
+- Active Nodes: ["node_WindSpeed", "node_Humidity", "node_Pressure", "node_Rainfall"s]
+- Data Description: The dataset captures meteorological conditions over different seasons to analyze weather patterns.
+- Variable Descriptions:
+[
+"node_WindSpeed": "The speed at which air moves.",
+"node_Humidity": "The amount of water vapor in the air.",
+"node_Pressure": "A measure of atmospheric force.",
+"node_Rainfall": "The amount of precipitation occurring in a specific area."
+]
+Output: node_Rainfall
+
+Active Nodes: {active_nodes}  
+Data Description: {data_description}  
+Variable Descriptions: 
+[
+{variable_description_str}
+]  
+Output: 

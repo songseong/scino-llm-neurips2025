@@ -3,10 +3,12 @@ src/control/__pycache__
 src/CaPS/__pycache__
 __pycache__/
 _/
-
+ckpt2/
 ckpt/
-wandb/
 data/
+control_llm_tau.py
+
+wandb/
 diffan_results/
 
 .env
