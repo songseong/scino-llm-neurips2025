@@ -22,7 +22,7 @@ def main():
     
     parser = argparse.ArgumentParser(description='SciNO')
     parser.add_argument("--config", type=str, required=True, help="Path to the config file")
-    parser.add_argument('--models', nargs='+', type=str, required=True, choices=['DiffAN', 'FNO'], help='Select one models to run')
+    parser.add_argument('--models', nargs='+', type=str, required=True, choices=['DiffAN', 'SciNO'], help='Select one models to run')
     parser.add_argument('--load-ckpt', action='store_true', help='Load model from a checkpoint')
     parser.add_argument('--CaPS', action='store_true', help='Using CaPS method')
     parser.add_argument('--probe', action='store_true', help='linear probing')
@@ -94,7 +94,7 @@ def main():
                        name = experiment_name)
 
             results = {"DiffAN": {"error": [], "SID_R": [], "SID_P": []}, 
-                       "FNO": {"error": [], "SID_R": [], "SID_P": []}}
+                       "SciNO": {"error": [], "SID_R": [], "SID_P": []}}
             dict_errors = {model_name: {} for model_name in args.models}  
 
             for graph_idx in graph_range:
@@ -103,7 +103,7 @@ def main():
 
                 true_causal_matrix, X, _ = get_dataset(dataset, n_node, graph_idx, config.datasets.num_samples)
 
-                model_type_map = {"DiffAN": "mlp", "FNO": "fno"}
+                model_type_map = {"DiffAN": "mlp", "SciNO": "scino"}
                 model_dict = {
                     name: Model(config, n_nodes=n_node, model_type=model_type_map[name])
                     for name in args.models
@@ -111,14 +111,13 @@ def main():
 
                 for model_name in args.models:
                     if args.probe and (model_name != "DiffAN"):
-                        model = ModelProbe(config, n_nodes=n_node, model_type='fno')
+                        model = ModelProbe(config, n_nodes=n_node, model_type='scino')
 
                         torch.cuda.reset_peak_memory_stats()
 
                         adj_matrix, order = model.probing(X, true_causal_matrix)
                         print("predicted order: ", order)
                         
-                        # best_results.json path
                         best_result_path = "prob_results/best_results.json"
 
                         if os.path.exists(best_result_path):
@@ -127,18 +126,16 @@ def main():
                         else:
                             best_results = {}
                         cur_errors = num_errors(order, true_causal_matrix)
-                        # 현재 dataset의 best result 갱신 조건 확인
                         if (dataset not in best_results) or (cur_errors < best_results[dataset]["num_errors"]):
                             best_results[dataset] = {
                                 "num_errors": int(cur_errors),
                                 "order": order,
                                 "config": namespace2dict(config)
                             }
-                            print(f"✅ Best result updated for {dataset} with {cur_errors} errors.")
+                            print(f"Best result updated for {dataset} with {cur_errors} errors.")
                         else:
-                            print(f"ℹ️ No update. Current num_errors ({cur_errors}) is not better than best ({best_results[dataset]['num_errors']}).")
+                            print(f"No update. Current num_errors ({cur_errors}) is not better than best ({best_results[dataset]['num_errors']}).")
 
-                        # 저장
                         with open(best_result_path, "w") as f:
                             json.dump(best_results, f, indent=2)
                     else:

@@ -157,22 +157,10 @@ def train_test(args, train_set, GT_DAG, data_ls, runs):
             order.append(active_nodes[0])
             order.reverse()
 
-            # compute parents score
-            # active_nodes = list(range(d))
-            # full_H = Stein_hess(full_X, eta_G, eta_H).mean(axis=0)
-            # parents_score = np.zeros((d,d))
-            # for i in range(d):
-            #     curr_X = torch.hstack([full_X[:,0:i], full_X[:,i+1:]])
-            #     curr_H = Stein_hess(curr_X, eta_G, eta_H).mean(axis=0)
-            #     parents_score[i] = get_parents_score(curr_H, full_H, i)
-            # print(parents_score)
-            
-            parents_score = None
-
-            return order, parents_score
+            return order
         
         cutoff = 0.001
-        order, parents_score = compute_top_order(train_set, eta_G=0.001, eta_H=0.001, dispersion="mean")
+        order = compute_top_order(train_set, eta_G=0.001, eta_H=0.001, dispersion="mean")
 
         print(blue(str(order)))
 

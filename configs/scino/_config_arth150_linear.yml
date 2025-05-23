@@ -1,0 +1,46 @@
+setup:
+    experiment_name : _scino_arth150_linear
+    use_wandb : True
+    save_folder : 'ckpt'
+    output_path : "results_arth150_linear.txt"
+    
+datasets:
+    name : arth150_linear
+    n_nodes : [107] 
+    num_graphs_list : [1]
+    num_samples : 10000
+    data_ver : 1
+
+model:
+    beta_0 : 0.0001
+    beta_1 : 0.02
+    T : 1
+    hidden_channel : 1
+    n_fourier_layers : 1
+    norm_type : "layer"
+    bias : True
+
+training:
+    model_save : True
+    epochs : 1
+    batch_size : 1000
+    learning_rate : 0.001
+    early_stopping_wait : 1000
+    T : 0.5
+    scheduler: "onecycle"
+    mmd_model : False
+    probe_epochs : 50
+    probe_lr : 0.0001 
+
+
+evaluation:
+    load_order : False
+    ordering_batch_size : 10000
+    eval_batch_size : 128
+    n_votes : 3
+    t_max : 0.1
+    masking : True
+    residue : True
+    pruning_P : False
+    cutoff : 0.001
+    random_sampling : False

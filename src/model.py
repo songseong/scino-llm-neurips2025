@@ -11,10 +11,10 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from src.gaussian_diffusion import GaussianDiffusion, UniformSampler, get_named_beta_schedule, mean_flat, \
                                          LossType, ModelMeanType, ModelVarType
 from src.nn import DiffMLP
-from src.fno_LFPE import DiffFNO_LFPE, DiffFNO_LFPE_probe
+from src.scino import SciNO, SciNO_probe
 
 from torch.utils.data import TensorDataset, DataLoader
-from src.ordering import topological_ordering2
+from src.ordering import topological_ordering
 from datetime import datetime
 import time
 from src.pruning import pruning
@@ -39,7 +39,7 @@ class Model:
         self.n_nodes = n_nodes
         self.model_type = model_type
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        if model_type == "fno":
+        if model_type == "scino":
             self.sde = VPSDE(config)
         self.n_steps = 100
 
@@ -88,11 +88,11 @@ class Model:
         self.should_log = (self.config.training.graph_idx == 0)
 
     def initialize_model(self, config, n_nodes, model_type):
-        if model_type == "fno":
+        if model_type == "scino":
             n_fourier_layers = getattr(config.model, "n_fourier_layers", None)
             bias = getattr(config.model, "bias", False)
             norm_type = getattr(config.model, "norm_type", None)
-            model = DiffFNO_LFPE(n_nodes, n_fourier_layers=n_fourier_layers, bias=bias, norm_type=norm_type)
+            model = SciNO(n_nodes, n_fourier_layers=n_fourier_layers, bias=bias, norm_type=norm_type)
             epochs = config.training.epochs
             learning_rate = config.training.learning_rate
             batch_size = config.training.batch_size
@@ -106,7 +106,6 @@ class Model:
             learning_rate = config.training.learning_rate
             batch_size = config.training.batch_size
             early_stopping_wait = config.training.early_stopping_wait
-        # print(model)
         return model, epochs, learning_rate, batch_size, early_stopping_wait
 
 
@@ -154,7 +153,7 @@ class Model:
             if self.best_model:
                 self.model.load_state_dict(self.best_model_state)
             
-            self.order = topological_ordering2(self.model, X, self.n_nodes, self.device, self.ordering_batch_size, self.config)
+            self.order = topological_ordering(self.model, X, self.n_nodes, self.device, self.ordering_batch_size, self.config)
 
             
             if wandb.run:
@@ -182,7 +181,7 @@ class Model:
     def compute_loss(self, x_0):
         x_0 = x_0.float().to(self.device)
 
-        if self.model_type == "fno":
+        if self.model_type == "scino":
             t = torch.rand(x_0.shape[0]).to(self.device) * self.config.training.T
             return score_loss(self.model, self.sde, x_0, t)
         else:
@@ -236,7 +235,6 @@ class Model:
                 self.log_wandb("Validation loss", epoch_val_loss)
                 pbar.set_postfix({'Epoch Loss': epoch_val_loss})
 
-                #best model selection
                 if self.mmd_model:
                     with torch.no_grad():
                         x_init = torch.randn(1000, self.n_nodes).to(self.device)
@@ -251,7 +249,7 @@ class Model:
                             if self.config.use_wandb:
                                 wandb.run.summary[f"best_mmd"] = mmd_score
 
-                else: #val loss 
+                else:
                     if self.best_loss > epoch_val_loss:
                         self.best_loss = epoch_val_loss
                         self.best_model_state = copy.deepcopy(self.model.state_dict())
@@ -269,7 +267,7 @@ class Model:
 
     def log_wandb(self, loss_key, loss_value):
         if self.should_log and self.config.use_wandb:
-            key = f'{"DiffAN" if self.model_type == "mlp" else "FNO"} - {loss_key}'
+            key = f'{"DiffAN" if self.model_type == "mlp" else "scino"} - {loss_key}'
             wandb.log({key: loss_value})
 
 
@@ -278,10 +276,8 @@ class ModelProbe(Model):
         super().__init__(config, n_nodes, model_type)
         self.probe_lr = self.config.training.probe_lr
         self.probe_epochs = getattr(self.config.training,"probe_epochs", 50)
+
     def probing(self, X, true_adj):
-        print("=============\n"*1)
-        print(self.file_name)
-        print("=============\n"*1)
         if self.config.pretrain is None:
             ckpt = torch.load(self.file_name, weights_only=True)
             self.model.load_state_dict(ckpt["model_state_dict"])
@@ -342,7 +338,7 @@ class ModelProbe(Model):
     def post_train(self, model, X, active_nodes):
         model.to(self.device)
         model.train()
-        batch_size = 128 #1000
+        batch_size = 128 
 
         X_train, X_valid = train_test_split(X, test_size=0.1, random_state=42)
 
@@ -391,18 +387,18 @@ class ModelProbe(Model):
 
         pbar = tqdm(range(n_nodes - 1), desc="Nodes ordered")
         for _ in pbar:
-            probe_model = DiffFNO_LFPE_probe(self.model, active_nodes)
+            probe_model = SciNO_probe(self.model, active_nodes)
             self.opt = torch.optim.Adam(probe_model.lp_parameters(), lr=self.probe_lr)
             self.post_train(probe_model, X, active_nodes)
             t = torch.tensor([0.0], device=self.device)
             outputs = []
-            batch_size=128
+            batch_size = 128
             with torch.no_grad():
                 for i in range(0, X.shape[0], batch_size):
                     x_batch = X[i:i+batch_size]
-                    out_batch = probe_model(x_batch, t)  # shape: (B, d)
+                    out_batch = probe_model(x_batch, t)  
                     outputs.append(out_batch)
-                output = torch.cat(outputs, dim=0)  # shape: (N, d) 
+                output = torch.cat(outputs, dim=0)  
                 if self.config.CaPS:
                     tqdm.write("CaPS ordering")
                     leaf_ = int(output.mean(0).argmax())

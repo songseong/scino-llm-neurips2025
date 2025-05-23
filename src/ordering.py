@@ -6,7 +6,7 @@ from collections import Counter
 from torch.func import vmap, jacrev, jacfwd
 from torch.utils.data import DataLoader
 
-def topological_ordering2(model, X, n_nodes, device, batch_size, config, step=None):
+def topological_ordering(model, X, n_nodes, device, batch_size, config, step=None):
     eval_batch_size = config.evaluation.eval_batch_size
     model.eval()
     order = []
@@ -30,8 +30,8 @@ def topological_ordering2(model, X, n_nodes, device, batch_size, config, step=No
 
         leaves = []
         for steps in steps_list:
-            model_fn_functorch = get_model_function_with_residue2(model, steps, active_nodes, order, config, device)
-            leaf_ = compute_jacobian_and_get_leaf2(model_fn_functorch, data_loader, active_nodes, device, config.evaluation.masking, config)
+            model_fn_functorch = get_model_function_with_residue(model, steps, active_nodes, order, config, device)
+            leaf_ = compute_jacobian_and_get_leaf(model_fn_functorch, data_loader, active_nodes, device, config.evaluation.masking, config)
             if not config.evaluation.masking and not config.evaluation.residue:
                 order = leaf_.tolist()
                 order.reverse()
@@ -47,7 +47,7 @@ def topological_ordering2(model, X, n_nodes, device, batch_size, config, step=No
     return order
 
 
-def get_model_function_with_residue2(model, step, active_nodes, order, config, device):
+def get_model_function_with_residue(model, step, active_nodes, order, config, device):
     t_functorch = (torch.ones((1,)) * step).to(device).float()
     get_score_active = lambda x: model(x, t_functorch)[:, active_nodes]
     get_score_previous_leaves = lambda x: model(x, t_functorch)[:, order]
@@ -67,7 +67,7 @@ def get_model_function_with_residue2(model, step, active_nodes, order, config, d
     return model_fn_functorch
 
 
-def compute_jacobian_and_get_leaf2(model_fn_functorch, data_loader, active_nodes, device, masking, config):
+def compute_jacobian_and_get_leaf(model_fn_functorch, data_loader, active_nodes, device, masking, config):
     jacobian = []
     for x_batch in data_loader:
         if masking:
@@ -83,7 +83,7 @@ def compute_jacobian_and_get_leaf2(model_fn_functorch, data_loader, active_nodes
         leaf = var_sorted_nodes[-1]
     #### DiffAN
     else:
-        leaf = get_leaf2(jacobian)
+        leaf = get_leaf(jacobian)
     return leaf
 
 
@@ -92,7 +92,7 @@ def get_masked(x, active_nodes, device):
     dropout_mask[:, active_nodes] = 1
     return (x * dropout_mask).float()
 
-def get_leaf2(jacobian_active):
+def get_leaf(jacobian_active):
     jacobian_var_diag = jacobian_active.var(0).diagonal()
 
     var_sorted_nodes = np.argsort(jacobian_var_diag)

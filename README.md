@@ -17,7 +17,7 @@ python main.py --config {config_name}.yml --models {model_name} ...
 ```
 
 - **{config_name}.yml**: Name of the configuration file to use.
-- **{model_name}**: Name of the model to run (choose one: DiffAN or FNO).
+- **{model_name}**: Name of the model to run (choose one: DiffAN or SciNO).
 
 **Loading Saved Models**
 ```
