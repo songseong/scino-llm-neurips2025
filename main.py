@@ -62,7 +62,7 @@ def main():
         os.makedirs(config.folder_path, exist_ok=True)
         shutil.copy(config.config_file, config.folder_path)
 
-    dataset_names = ['ecoli70_linear','magic-irri_linear', 'magic-niab_linear', 'arth150_linear', 'sachs_nocycle', 'sachs_bn', 'sachs', 'dream', 'asia', 'cancer', 'earthquake', 'survey', 'child', 'physics', 'ecoli70', 'magic-niab', 'magic-irri', 'arth150']
+    dataset_names = ['ecoli70_linear','magic-irri_linear', 'magic-niab_linear', 'arth150_linear', 'sachs_nocycle', 'sachs', 'physics', 'ecoli70', 'magic-niab', 'magic-irri', 'arth150']
     dataset = next((ds for ds in dataset_names if ds in config.config_name), 'synthetic')
     dataset = dataset.strip()
     config.dataset_name = dataset
