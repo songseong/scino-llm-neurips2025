@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 import yaml
 from src.utils import dict2namespace
 from src.data import get_dataset
-from src.fno_LFPE import DiffFNO_LFPE
+from src.scino import SciNO
 
 # Static paths
 CONFIG_PATH = 'configs/control/_control.yml'
@@ -45,12 +45,12 @@ def restructure_variances(variance_list):
     return variance_list, node_variance_lists, node_variance_means, node_variance_stds, leaf
 
 def ensemble_topological_ordering(order, active_nodes, num_model=30):
-    base_path = f"ckpt/_ckpt_control/_fno_{dataset_config.dataset_name}"
+    base_path = f"ckpt/_ckpt_control/_scino_{dataset_config.dataset_name}"
     n_nodes = dataset_config.n_nodes
 
     all_variances = []
     for m_idx in tqdm(range(num_model)):
-        model_path = f"{base_path}/fno_n{n_nodes}_g{m_idx}.pth"
+        model_path = f"{base_path}/scino_n{n_nodes}_g{m_idx}.pth"
         try:
             leaf, variance_dict = topological_ordering_llm(order, active_nodes, model_path=model_path)
             all_variances.append(variance_dict)
@@ -65,7 +65,7 @@ def initialize_model_data(config, dataset_config, model_path=None):
     
     n_fourier_layers = getattr(dataset_config.model, "n_fourier_layers", None)
 
-    model = DiffFNO_LFPE(dataset_config.n_nodes, n_fourier_layers=n_fourier_layers).to(device)
+    model = SciNO(dataset_config.n_nodes, n_fourier_layers=n_fourier_layers).to(device)
     ckpt = torch.load(model_path, weights_only=True)
     model.load_state_dict(ckpt["model_state_dict"])
     model.eval()
@@ -93,8 +93,8 @@ def topological_ordering_llm(order, active_nodes, data_loader=None, model_path=N
 
     leaves, variance_list = [], []
     for steps in steps_list:
-        model_fn_functorch = get_model_function_with_residue2(model, steps, active_nodes, order, config, device)
-        leaf_, variance_ = compute_jacobian_and_get_leaf2(model_fn_functorch, data_loader, active_nodes, device, dataset_config.evaluation.masking)
+        model_fn_functorch = get_model_function_with_residue(model, steps, active_nodes, order, config, device)
+        leaf_, variance_ = compute_jacobian_and_get_leaf(model_fn_functorch, data_loader, active_nodes, device, dataset_config.evaluation.masking)
         leaves.append(leaf_)
         variance_list.append(variance_)
     most_common_leaf = Counter(leaves).most_common(1)[0][0]
@@ -105,7 +105,7 @@ def topological_ordering_llm(order, active_nodes, data_loader=None, model_path=N
 
     return leaf_global, variance_dict
 
-def get_model_function_with_residue2(model, step, active_nodes, order, config, device):
+def get_model_function_with_residue(model, step, active_nodes, order, config, device):
     t_functorch = (torch.ones((1,)) * step).to(device).float()
     get_score_active = lambda x: model(x, t_functorch)[:, active_nodes]
     get_score_previous_leaves = lambda x: model(x, t_functorch)[:, order]
@@ -124,7 +124,7 @@ def get_model_function_with_residue2(model, step, active_nodes, order, config, d
         return score_active
     return model_fn_functorch
 
-def compute_jacobian_and_get_leaf2(model_fn_functorch, data_loader, active_nodes, device, masking):
+def compute_jacobian_and_get_leaf(model_fn_functorch, data_loader, active_nodes, device, masking):
     jacobian = []
     for x_batch in data_loader:
         if masking:
@@ -132,7 +132,7 @@ def compute_jacobian_and_get_leaf2(model_fn_functorch, data_loader, active_nodes
         jacobian_ = vmap(jacrev(model_fn_functorch))(x_batch.unsqueeze(1)).squeeze()
         jacobian.append(jacobian_[..., active_nodes].detach().cpu().numpy())
     jacobian = np.concatenate(jacobian, 0)
-    leaf, variance = get_leaf2(jacobian)
+    leaf, variance = get_leaf(jacobian)
     return leaf, variance
 
 def get_masked(x, active_nodes, device):
@@ -140,7 +140,7 @@ def get_masked(x, active_nodes, device):
     dropout_mask[:, active_nodes] = 1
     return (x * dropout_mask).float()
 
-def get_leaf2(jacobian_active):
+def get_leaf(jacobian_active):
     jacobian_var_diag = jacobian_active.var(0).diagonal()
     var_sorted_nodes = np.argsort(jacobian_var_diag)
     return var_sorted_nodes[0], jacobian_var_diag
