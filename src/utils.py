@@ -90,7 +90,7 @@ def compute_rbf_kernel(X, n_kernels=5, mul_factor=2.0, bandwidth=None):
 def compute_mmd(x, y, n_kernels=5, mul_factor=2.0, bandwidth=None):
     """
     Biased MMD estimate using multi-scale RBF kernel.
-    https://github.com/yiftachbeer/mmd_loss_pytorch?tab=readme-ov-file 참고함
+    https://github.com/yiftachbeer/mmd_loss_pytorch?tab=readme-ov-file
 
     Args:
         x, y: jnp.ndarray, shape (n_samples, n_features)

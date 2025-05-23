@@ -40,7 +40,7 @@ Make sure to specify the target dataset by setting the dataset_name field in the
 
 ### Pretrained checkpoints
 
-All **checkpoints** are provided in this [Google Drive link](https://drive.google.com/file/d/1ZZ5godXYGNQGVLrFNJ5mtx0CCTlaaT2_/view?usp=drive_link).
+All **checkpoints** are provided in this [Google Drive link](https://drive.google.com/file/d/1e_xypBdeiUNgnId-0H7JP3AfZM75uBet/view?usp=drive_link).
 
 ### Dataset
 

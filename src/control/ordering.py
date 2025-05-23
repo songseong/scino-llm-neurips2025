@@ -55,7 +55,7 @@ def ensemble_topological_ordering(order, active_nodes, num_model=30):
             leaf, variance_dict = topological_ordering_llm(order, active_nodes, model_path=model_path)
             all_variances.append(variance_dict)
         except Exception as e:
-            print(f"⚠️ Skipping model {m_idx} due to error: {e}")
+            print(f"Skipping model {m_idx} due to error: {e}")
     
     return restructure_variances(all_variances)
 

@@ -45,25 +45,6 @@ def analyze_log_probs(log_probs, alpha=0.5):
         "normalized_prob2": normalized_prob2,
     }
 
-def compute_min_pref_len_fast(token_ids):
-    from collections import defaultdict
-    prefix_counter = defaultdict(int)
-    for var, ids in token_ids.items():
-        for L in range(1, len(ids) + 1):
-            prefix = tuple(ids[:L])
-            prefix_counter[prefix] += 1
-
-    min_pref_len = {}
-    for var, ids in token_ids.items():
-        for L in range(1, len(ids) + 1):
-            prefix = tuple(ids[:L])
-            if prefix_counter[prefix] == 1:
-                min_pref_len[var] = L
-                break
-        else:
-            min_pref_len[var] = len(ids)
-    return min_pref_len
-
 def get_node_joint_prob(model, tokenizer, prompt, variable_names, dataset_name, model_name="Llama3_1_8B_Instruct", cache_dir="LLM_cache"):
     
     #cache
